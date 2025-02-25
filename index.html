@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>光影轨迹艺术</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background: #000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        canvas {
+            cursor: none;
+        }
+        .controls {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            color: white;
+            font-family: Arial, sans-serif;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .controls button {
+            background: #4CAF50;
+            border: none;
+            color: white;
+            padding: 5px 10px;
+            margin: 5px;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+        .controls button:hover {
+            background: #45a049;
+        }
+        .controls select {
+            background: #4CAF50;
+            border: none;
+            color: white;
+            padding: 5px 10px;
+            margin: 5px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-family: Arial, sans-serif;
+        }
+        .controls select:hover {
+            background: #45a049;
+        }
+        .controls select option {
+            background: #333;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="controls">
+        <button onclick="changeColor()">更换颜色</button>
+        <select id="effectSelect" onchange="changeEffectType(this.value)">
+            <option value="circle">圆形粒子</option>
+            <option value="star">星形粒子</option>
+            <option value="square">方形粒子</option>
+            <option value="spiral">螺旋粒子</option>
+            <option value="explosion">爆炸效果</option>
+            <option value="firework">烟花效果</option>
+            <option value="lightning">闪电效果</option>
+            <option value="ripple">波纹效果</option>
+            <option value="neon">霓虹效果</option>
+            <option value="flame">火焰效果</option>
+            <option value="galaxy">星系效果</option>
+            <option value="quantum">量子效果</option>
+            <option value="aurora">极光效果</option>
+        </select>
+        <select id="soundSelect" onchange="changeSoundType(this.value)">
+            <option value="sine">正弦波</option>
+            <option value="square">方波</option>
+            <option value="triangle">三角波</option>
+            <option value="piano">钢琴音色</option>
+            <option value="drum">鼓点音效</option>
+            <option value="electronic">电子音效</option>
+            <option value="orchestra">管弦乐音效</option>
+            <option value="bell">铃声音效</option>
+            <option value="wind">风声音效</option>
+            <option value="water">水声音效</option>
+            <option value="crystal">水晶音效</option>
+            <option value="space">空间音效</option>
+            <option value="laser">激光音效</option>
+        </select>
+        <button onclick="clearCanvas()">清除画布</button>
+        <button id="toggleMusic" onclick="toggleBackgroundMusic()">播放音乐</button>
+    </div>
+    <canvas id="canvas"></canvas>
+    <script src="script.js"></script>
+</body>
+</html>

@@ -417,6 +417,135 @@ canvas.addEventListener('mousemove', (e) => {
     }
 });
 
+// 录制相关变量
+let mediaRecorder = null;
+let recordedChunks = [];
+
+// 开始录制
+function startRecording() {
+    // 检查浏览器是否支持必要的API
+    if (!navigator.mediaDevices || !MediaRecorder || !canvas.captureStream) {
+        alert('您的浏览器不支持录制功能，请使用最新版本的Chrome、Firefox或Edge浏览器');
+        return;
+    }
+
+    recordedChunks = [];
+    let canvasStream;
+    try {
+        canvasStream = canvas.captureStream(60); // 60 FPS
+    } catch (error) {
+        console.error('无法捕获画布流:', error);
+        alert('无法启动画布录制，请刷新页面重试');
+        return;
+    }
+
+    const audioTracks = [];
+    
+    // 捕获音频上下文的输出
+    try {
+        const audioDestination = audioContext.createMediaStreamDestination();
+        if (backgroundMusic) {
+            backgroundMusic.connect(audioDestination);
+        }
+        const audioTrack = audioDestination.stream.getAudioTracks()[0];
+        if (audioTrack) {
+            audioTracks.push(audioTrack);
+        }
+    } catch (error) {
+        console.error('音频流处理错误:', error);
+        // 即使音频出错，仍然继续录制视频
+    }
+    
+    // 合并视频和音频流
+    const stream = new MediaStream();
+    canvasStream.getVideoTracks().forEach(track => stream.addTrack(track));
+    audioTracks.forEach(track => stream.addTrack(track));
+    
+    // 检查支持的媒体类型
+    const mimeTypes = [
+        'video/webm;codecs=vp9',
+        'video/webm;codecs=vp8',
+        'video/webm'
+    ];
+
+    let mimeType = '';
+    for (const type of mimeTypes) {
+        if (MediaRecorder.isTypeSupported(type)) {
+            mimeType = type;
+            break;
+        }
+    }
+
+    if (!mimeType) {
+        alert('您的浏览器不支持WebM格式录制，请使用其他浏览器');
+        return;
+    }
+
+    try {
+        mediaRecorder = new MediaRecorder(stream, {
+            mimeType: mimeType
+        });
+
+        mediaRecorder.ondataavailable = (event) => {
+            if (event.data.size > 0) {
+                recordedChunks.push(event.data);
+            }
+        };
+
+        mediaRecorder.onerror = (error) => {
+            console.error('MediaRecorder error:', error);
+            alert('录制出错，请重试');
+            stopRecording();
+        };
+
+        mediaRecorder.onstart = () => {
+            console.log('开始录制');
+            document.getElementById('startRecord').style.display = 'none';
+            document.getElementById('stopRecord').style.display = 'inline';
+        };
+
+        mediaRecorder.onstop = () => {
+            console.log('停止录制');
+            document.getElementById('stopRecord').style.display = 'none';
+            document.getElementById('startRecord').style.display = 'inline';
+            document.getElementById('saveRecord').style.display = 'inline';
+        };
+
+        // 设置录制时间片段
+        mediaRecorder.start(1000); // 每秒生成一个数据片段
+        console.log('MediaRecorder started', mediaRecorder.state);
+        
+        // 按钮状态会通过onstart事件处理
+    } catch (error) {
+        console.error('Failed to create MediaRecorder:', error);
+        alert('无法启动录制，请确保使用支持的浏览器');
+    }
+}
+
+// 停止录制
+function stopRecording() {
+    mediaRecorder.stop();
+    document.getElementById('stopRecord').style.display = 'none';
+    document.getElementById('saveRecord').style.display = 'inline';
+}
+
+// 保存录制内容
+function saveRecording() {
+    const blob = new Blob(recordedChunks, {
+        type: 'video/webm'
+    });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    document.body.appendChild(a);
+    a.style.display = 'none';
+    a.href = url;
+    a.download = '光影轨迹录制_' + new Date().toISOString().slice(0,19).replace(/[:-]/g, '') + '.webm';
+    a.click();
+    window.URL.revokeObjectURL(url);
+    document.getElementById('saveRecord').style.display = 'none';
+    document.getElementById('startRecord').style.display = 'inline';
+}
+
 // 动画循环
 function animate() {
     ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
